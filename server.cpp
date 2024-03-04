@@ -10,8 +10,12 @@
 #include <iostream>
 #include <sstream>
 #include <sys/stat.h>
+#include <csignal>
+
 
 #define maxStrLen 256
+
+void signalHandler( int );
 
 
 int main(int argc, const char * argv[]){
@@ -26,10 +30,17 @@ int main(int argc, const char * argv[]){
     std::cerr << "ERROR: Port number out of range";
     exit(1);
   }
+
+  // handle sigterm, sigquit
+  signal(SIGTERM, signalHandler);
+  signal(SIGQUIT, signalHandler);  
+  
+
+
   int connectionID = 0; // keep track of connected id
 
   // create output directory
-  std::string outputDirectory = "." + std::string(argv[2]);
+  std::string outputDirectory = std::string(argv[2]);
   mkdir(outputDirectory.c_str(), 0777);
 
   //set output path
@@ -105,4 +116,13 @@ int main(int argc, const char * argv[]){
   fclose(fp);
 
   return 0;
+}
+
+void signalHandler( int signum ) {
+   std::cout << "Interrupt signal (" << signum << ") received.\n";
+
+   // cleanup and close up stuff here  
+   // terminate program  
+
+   exit(0);  
 }
