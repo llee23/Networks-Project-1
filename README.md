@@ -37,16 +37,16 @@ Another problem I ran into was implementing the 10 second timeout. I found infor
 
 ### Client
 
-- <sys/stat.h>
-- <netdb.h>
-- <sys/time.h>
-- <signal.h>
+- sys/stat.h
+- netdb.h
+- sys/time.h
+- signal.h
 
 ### Server
 
-- <fstream>
-- <sys/stat.h>
-- <csignal>
+- fstream
+- sys/stat.h
+- csignal
 
 ## Acknowledgement
 
