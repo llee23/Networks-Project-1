@@ -55,6 +55,15 @@ int main(int argc, const char * argv[]){
     perror("setsockopt");
     return 1;
   }
+  // set socket timeout
+  struct timeval timeout;
+  timeout.tv_sec = 10;
+  timeout.tv_usec = 0;
+  if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
+    perror("setsockopt");
+    return 1;
+  }
+
 
   // bind address to socket
   struct sockaddr_in addr;
@@ -74,7 +83,8 @@ int main(int argc, const char * argv[]){
     return 3;
   }
 
-  // accept a new connection from a client
+  while(true){
+    // accept a new connection from a client
   struct sockaddr_in clientAddr;
   socklen_t clientAddrSize = sizeof(clientAddr);
   int clientSockfd = accept(sockfd, (struct sockaddr*)&clientAddr, &clientAddrSize);
@@ -105,24 +115,29 @@ int main(int argc, const char * argv[]){
     
   // Check if there was an error while receiving
   if (received < 0) {
-    std::cerr << "Error receiving data." << std::endl;
-    return 1;
+    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+      // Timeout occurred, save the ERROR File
+      fclose(fp); // close the file
+      FILE* fp = fopen(filepath.c_str(), "w"); // reopen the file, which will clear it
+      fprintf(fp, "ERROR");
+      fclose(fp);
+      exit(1);
+    } else {
+      std::cerr << "Error receiving data." << std::endl;
+      exit(1);
+    }
   }
 
   // close socket
   close(clientSockfd);
-
   // close output file
   fclose(fp);
+  }
 
   return 0;
 }
 
 void signalHandler( int signum ) {
    std::cout << "Interrupt signal (" << signum << ") received.\n";
-
-   // cleanup and close up stuff here  
-   // terminate program  
-
    exit(0);  
 }
